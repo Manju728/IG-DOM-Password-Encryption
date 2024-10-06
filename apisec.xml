@@ -1,12 +1,12 @@
 <Integration>
   <aliases>    
-    <alias Environment="Integration" name="aliasPwmanju" password="{RSA:RSLP6cbdp38E4pl5QjSWd3TxUDYW/t/Iie3WvZc7ZnIaFA8mjIKn7qtiXcykuJkLA9AAtRHCJB6f"/>    
-    <alias Environment="Integration" name="aliasPwakhila" password="{AES:pvRALXr8DGGCY6fSNdFQZ91qZCL+LEPYPMBZLf9SSc5YT09kV49Z7vtuclRoQ4M1w6RQJzOm9hWv9tATwGw+1w==}"/>
+    <alias name="aliasPwmanju" password="{RSA:RSLP6cbdp38E4pl5QjSWd3TxUDYW/t/Iie3WvZc7ZnIaFA8mjIKn7qtiXcykuJkLA9AAtRHCJB6f"/>    
+    <alias name="aliasPwakhila" password="{AES:pvRALXr8DGGCY6fSNdFQZ91qZCL+LEPYPMBZLf9SSc5YT09kV49Z7vtuclRoQ4M1w6RQJzOm9hWv9tATwGw+1w==}"/>
   </aliases>
 </Intergration>
 <Production>
   <aliases>    
-    <alias Environment="Production" name="aliasPwashik" password="{RSA:RSLP6cbdp38E4pl5QjSWd3TxUDYW/t/Iie3WvZc7ZnIaFA8mjIKn7qtiXcykuJkLA9AAtRHCJB6f"/>    
-    <alias Environment="Production" name="aliasPwakhila" password="{AES:pvRALXr8DGGCY6fSNdFQZ91qZCL+LEPYPMBZLf9SSc5YT09kV49Z7vtuclRoQ4M1w6RQJzOm9hWv9tATwGw+1w==}"/>
+    <alias name="aliasPwashik" password="{RSA:RSLP6cbdp38E4pl5QjSWd3TxUDYW/t/Iie3WvZc7ZnIaFA8mjIKn7qtiXcykuJkLA9AAtRHCJB6f"/>    
+    <alias name="aliasPwakhila" password="{AES:pvRALXr8DGGCY6fSNdFQZ91qZCL+LEPYPMBZLf9SSc5YT09kV49Z7vtuclRoQ4M1w6RQJzOm9hWv9tATwGw+1w==}"/>
   </aliases>
 </Production>
