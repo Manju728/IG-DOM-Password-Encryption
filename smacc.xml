@@ -7,6 +7,6 @@
 <Production>
   <aliases>    
     <alias name="aliasPwshashi" password="{RSA:RSLP6cbdp38E4pl5QjSWd3TxUDYW/t/Iie3WvZc7ZnIaFA8mjIKn7qtiXcykuJkLA9AAtRHCJB6f"/>    
-    <alias name="aliasPwashik" password="{AES:pvRALXr8DGGCY6fSNdFQZ91qZCL+LEPYPMBZLf9SSc5YT09kV49Z7vtuclRoQ4M1w6RQJzOm9hWv9tATwGw+1w==}"/>
+    <alias name="aliasPwashik" password="{AES:U2FsdGVkX1/l0eEXYxfZjTn5wB0I7zEmadPowuPr+4A="/>
   </aliases>
 </Production>
