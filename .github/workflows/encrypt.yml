@@ -1,0 +1,77 @@
+name: Password Encryption Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      Environment:
+        type: choice
+        required: true
+        options:
+          - Integration
+          - Production
+      user:
+        type: choice
+        required: true
+        options:
+          - manju
+          - akhila
+          - ram
+          - naresh
+          - naveen
+          - shashi
+          - ashik
+          - anvesh
+      encryptionMethod:
+        type: choice
+        required: true
+        options:
+          - AES
+          - RSA
+      newPassword:
+        description: 'New password for this user'
+        required: true
+
+jobs:
+  password_encryption:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Encrypt Password
+        id: encrypt_password
+        run: |
+          if [[ "${{ inputs.encryptionMethod }}" == "AES" ]]; then
+            ENCRYPTED_PASSWORD=$(echo "${{ inputs.newPassword }}" | openssl enc -aes-256-cbc -a -salt -pass pass:somepassword)
+          elif [[ "${{ inputs.encryptionMethod }}" == "RSA" ]]; then
+            # Generate a temporary RSA key for demonstration
+            openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
+            openssl rsa -pubout -in private.pem -out public.pem
+
+            # Encrypt the password with RSA
+            echo "${{ inputs.newPassword }}" | openssl rsautl -encrypt -pubin -inkey public.pem | base64 > encrypted_password.txt
+            ENCRYPTED_PASSWORD=$(cat encrypted_password.txt)
+          fi
+          echo "::set-output name=encrypted_password::$ENCRYPTED_PASSWORD"
+
+      - name: Update Password in XML Files
+        run: |
+          if [[ "${{ inputs.Environment }}" == "Integration" ]]; then
+            # Find and replace the password for the user in the Integration environment
+            find . -name "*.xml" -exec sed -i "s|<alias id = "Integration" name=\"aliasPw${{ inputs.user }}\" password=\"{[^}]*}\"|<alias name=\"aliasPw${{ inputs.user }}\" password=\"{${{ inputs.encryptionMethod }}:${{ steps.encrypt_password.outputs.encrypted_password }}\"|g" {} +
+          elif [[ "${{ inputs.Environment }}" == "Production" ]]; then
+            # Find and replace the password for the user in the Production environment
+            find . -name "*.xml" -exec sed -i "s|<alias id = "Production" name=\"aliasPw${{ inputs.user }}\" password=\"{[^}]*}\"|<alias name=\"aliasPw${{ inputs.user }}\" password=\"{${{ inputs.encryptionMethod }}:${{ steps.encrypt_password.outputs.encrypted_password }}\"|g" {} +
+          fi
+
+          echo "Updated the XML file with the encrypted password for user ${{ inputs.user }} in ${{ inputs.Environment }} environment."
+          
+      - name: Commit and Push Changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Updated password for ${{ inputs.user }} using ${{ inputs.encryptionMethod }} encryption in ${{ inputs.Environment }} environment"
+          git push
