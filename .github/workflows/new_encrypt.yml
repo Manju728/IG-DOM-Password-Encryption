@@ -1,0 +1,98 @@
+name: Password Encryption Workflow
+
+on:
+  workflow_dispatch:
+    inputs:
+      Environment:
+        type: choice
+        required: true
+        options:
+          - Integration
+          - Production
+      user:
+        type: choice
+        required: true
+        options:
+          - manju
+          - akhila
+          - ram
+          - naresh
+          - naveen
+          - shashi
+          - ashik
+          - anvesh
+      encryptionMethod:
+        type: choice
+        required: true
+        options:
+          - AES
+          - RSA
+      newPassword:
+        description: 'New password for this user'
+        required: true
+
+jobs:
+  password_encryption:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v3
+
+      - name: Set Write Permissions for XML Files
+        run: |
+          find ./config/ -name "*.xml" -exec chmod u+w {} \;
+
+      - name: Encrypt Password
+        id: encrypt_password
+        run: |
+          if [[ "${{ inputs.encryptionMethod }}" == "AES" ]]; then
+            ENCRYPTED_PASSWORD=$(echo "${{ inputs.newPassword }}" | openssl enc -aes-256-cbc -a -salt -pass pass:somepassword)
+          elif [[ "${{ inputs.encryptionMethod }}" == "RSA" ]]; then
+            openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
+            openssl rsa -pubout -in private.pem -out public.pem
+            echo "${{ inputs.newPassword }}" | openssl rsautl -encrypt -pubin -inkey public.pem | base64 > encrypted_password.txt
+            ENCRYPTED_PASSWORD=$(cat encrypted_password.txt)
+          fi
+          echo "::set-output name=encrypted_password::$ENCRYPTED_PASSWORD"
+
+      - name: List XML Files Before Update
+        run: |
+          echo "Listing XML files before update:"
+          find ./config/ -name "*.xml" -exec cat {} \;
+
+      - name: Update Password in XML Files
+        run: |
+          ENCRYPTED_PASSWORD="${{ steps.encrypt_password.outputs.encrypted_password }}"
+          USER="${{ inputs.user }}"
+          ENVIRONMENT="${{ inputs.Environment }}"
+          ENCRYPTION_METHOD="${{ inputs.encryptionMethod }}"
+
+          if [[ "$ENVIRONMENT" == "Integration" ]]; then
+            SPECIFIC_FOLDER="./config/Integration/"
+          elif [[ "$ENVIRONMENT" == "Production" ]]; then
+            SPECIFIC_FOLDER="./config/Production/"
+          fi
+
+          echo "Updating password for user $USER in the $ENVIRONMENT environment."
+
+          find $SPECIFIC_FOLDER -name "*.xml" -exec sed -i "s|<alias name=\"aliasPw${USER}\" password=\"{[^}]*}\"|<alias name=\"aliasPw${USER}\" password=\"{${ENCRYPTION_METHOD}:${ENCRYPTED_PASSWORD}\"|g" {} +
+
+      - name: List XML Files After Update
+        run: |
+          echo "Listing XML files after update:"
+          find ./config/ -name "*.xml" -exec cat {} \;
+
+      - name: Check for Modified Files
+        run: |
+          git status
+          git diff
+
+      - name: Commit and Push Changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Updated password for ${{ inputs.user }} using ${{ inputs.encryptionMethod }} encryption"
+          git push
