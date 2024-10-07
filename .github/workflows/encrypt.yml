@@ -52,16 +52,16 @@ jobs:
             echo "${{ inputs.newPassword }}" | openssl rsautl -encrypt -pubin -inkey public.pem | base64 > encrypted_password.txt
             ENCRYPTED_PASSWORD=$(cat encrypted_password.txt)
           fi
-          echo "::set-output name=encrypted_password::$ENCRYPTED_PASSWORD"
+          echo "encrypted_password=${ENCRYPTED_PASSWORD}" >> $GITHUB_ENV
 
       - name: Update Password in XML Files
         run: |
           if [[ "${{ inputs.Environment }}" == "Integration" ]]; then
             # Find and replace the password for the user in the Integration environment
-            find . -name "*.xml" -exec sed -i "s|<alias id = "Integration" name=\"aliasPw${{ inputs.user }}\" password=\"{[^}]*}\"|<alias id = "Integration" name=\"aliasPw${{ inputs.user }}\" password=\"{${{ inputs.encryptionMethod }}:${{ steps.encrypt_password.outputs.encrypted_password }}\"|g" {} +
+            find . -name "*.xml" -exec sed -i "s|<alias id = \"Integration\" name=\"aliasPw${{ inputs.user }}\" password=\"{[^}]*}\"|<alias id = \"Integration\" name=\"aliasPw${{ inputs.user }}\" password=\"{${{ inputs.encryptionMethod }}:${{ env.encrypted_password }}\"|g" {} +
           elif [[ "${{ inputs.Environment }}" == "Production" ]]; then
             # Find and replace the password for the user in the Production environment
-            find . -name "*.xml" -exec sed -i "s|<alias id = "Production" name=\"aliasPw${{ inputs.user }}\" password=\"{[^}]*}\"|<alias id = "Production" name=\"aliasPw${{ inputs.user }}\" password=\"{${{ inputs.encryptionMethod }}:${{ steps.encrypt_password.outputs.encrypted_password }}\"|g" {} +
+            find . -name "*.xml" -exec sed -i "s|<alias id = \"Production\" name=\"aliasPw${{ inputs.user }}\" password=\"{[^}]*}\"|<alias id = \"Production\" name=\"aliasPw${{ inputs.user }}\" password=\"{${{ inputs.encryptionMethod }}:${{ env.encrypted_password }}\"|g" {} +
           fi
 
           echo "Updated the XML file with the encrypted password for user ${{ inputs.user }} in ${{ inputs.Environment }} environment."
@@ -73,5 +73,5 @@ jobs:
           git config --global user.name "GitHub Actions"
           git config --global user.email "actions@github.com"
           git add .
-          git commit -m "Updated password for ${{ inputs.user }} using ${{ inputs.encryptionMethod }} encryption in ${{ inputs.Environment }} environment"
+          git commit -m "Updated password for ${{ inputs.user }} using ${{ inputs.encryptionMethod }} encryption in ${{ inputs.Environment }} environment" || echo "No changes to commit"
           git push
