@@ -27,6 +27,9 @@ on:
         options:
           - AES
           - RSA
+      newPassword:
+        description: 'New password for this user'
+        required: true
 
 jobs:
   password_encryption:
@@ -35,34 +38,23 @@ jobs:
       - name: Checkout Repository
         uses: actions/checkout@v3
 
-      - name: Set Write Permissions for XML Files
-        run: |
-          find ./config/ -name "*.xml" -exec chmod u+w {} \;
-
-      - name: Generate Random Password
-        id: generate_password
-        run: |
-          NEW_PASSWORD=$(openssl rand -base64 12)
-          echo "Generated random password: $NEW_PASSWORD"
-          echo "::set-output name=new_password::$NEW_PASSWORD"
-
       - name: Encrypt Password
         id: encrypt_password
         run: |
           if [[ "${{ inputs.encryptionMethod }}" == "AES" ]]; then
-            ENCRYPTED_PASSWORD=$(echo "${{ steps.generate_password.outputs.new_password }}" | openssl enc -aes-256-cbc -a -salt -pass pass:somepassword)
+            ENCRYPTED_PASSWORD=$(echo "${{ inputs.newPassword }}" | openssl enc -aes-256-cbc -a -salt -pass pass:somepassword)
           elif [[ "${{ inputs.encryptionMethod }}" == "RSA" ]]; then
             openssl genpkey -algorithm RSA -out private.pem -pkeyopt rsa_keygen_bits:2048
             openssl rsa -pubout -in private.pem -out public.pem
-            echo "${{ steps.generate_password.outputs.new_password }}" | openssl rsautl -encrypt -pubin -inkey public.pem | base64 > encrypted_password.txt
+
+            echo "${{ inputs.newPassword }}" | openssl rsautl -encrypt -pubin -inkey public.pem | base64 > encrypted_password.txt
             ENCRYPTED_PASSWORD=$(cat encrypted_password.txt)
           fi
           echo "::set-output name=encrypted_password::$ENCRYPTED_PASSWORD"
 
-      - name: List XML Files Before Update
+      - name: Debug Encrypted Password
         run: |
-          echo "Listing XML files before update:"
-          find ./config/ -name "*.xml" -exec cat {} \;
+          echo "Encrypted password: ${{ steps.encrypt_password.outputs.encrypted_password }}"
 
       - name: Update Password in XML Files
         run: |
@@ -70,29 +62,31 @@ jobs:
           USER="${{ inputs.user }}"
           ENVIRONMENT="${{ inputs.Environment }}"
           ENCRYPTION_METHOD="${{ inputs.encryptionMethod }}"
-
-          if [[ "$ENVIRONMENT" == "Integration" ]]; then
-            SPECIFIC_FOLDER="./config/Integration/"
-          elif [[ "$ENVIRONMENT" == "Production" ]]; then
-            SPECIFIC_FOLDER="./config/Production/"
-          fi
+          NEW_PASSWORD="${{ inputs.newPassword }}"
 
           echo "Updating password for user $USER in the $ENVIRONMENT environment."
-          echo "Using encryption method: $ENCRYPTION_METHOD"
-          echo "Encrypted password: $ENCRYPTED_PASSWORD"
 
-          find $SPECIFIC_FOLDER -name "*.xml" -exec sed -i "s|<alias name=\"aliasPw${USER}\" password=\"{[^}]*}\"|<alias name=\"aliasPw${USER}\" password=\"{${ENCRYPTION_METHOD}:${ENCRYPTED_PASSWORD}\"|g" {} +
+          if [[ "$ENVIRONMENT" == "Integration" ]]; then
+            SPECIFIC_FOLDER="./config/Integration" 
+          elif [[ "$ENVIRONMENT" == "Production" ]]; then
+            SPECIFIC_FOLDER="./config/Production"
+          fi
 
-      - name: List XML Files After Update
-        run: |
-          echo "Listing XML files after update:"
-          find ./config/ -name "*.xml" -exec cat {} \;
-
-      - name: Check for Modified Files
-        run: |
-          git status
-          git diff
-
+          echo "Processing XML files in $SPECIFIC_FOLDER"
+          find $SPECIFIC_FOLDER -name "*.xml" -exec chmod u+w {} \;
+          ls -l $SPECIFIC_FOLDER/*.xml
+          for xml_file in "$SPECIFIC_FOLDER"/*.xml; do
+            if [[ -f "$xml_file" ]]; then
+              if grep -q "<alias name=\"aliasPw${USER}\"" "$xml_file"; then
+                echo "Updating password in $xml_file"
+                sed -i "/<alias name=\"aliasPw${USER}\"/s|password=\"[^\"]*\"|password=\"{${ENCRYPTION_METHOD}:${ENCRYPTED_PASSWORD}}\"|g" "$xml_file"
+              else
+                echo "No matching alias found in $xml_file."
+              fi
+            fi
+          done
+          echo "Updated the XML file(s) with the encrypted password for user $USER in $ENVIRONMENT environment."
+          
       - name: Commit and Push Changes
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
