@@ -36,7 +36,7 @@ jobs:
       - name: Generate Encrypted Passwords for Users
         id: encrypt_passwords
         run: |
-          ENCRYPTED_PASSWORDS=""
+          ENCRYPTED_PASSWORDS=("")
           for USER in ${{ steps.define_users.outputs.users }}; do
             if [[ "${{ inputs.encryptionMethod }}" == "AES" ]]; then
               ENCRYPTED_PASSWORD=$(openssl rand -base64 12 | openssl enc -aes-256-cbc -a -salt -pass pass:somepassword)
@@ -63,7 +63,7 @@ jobs:
         run: |
           ENVIRONMENT="${{ inputs.Environment }}"
           ENCRYPTION_METHOD="${{ inputs.encryptionMethod }}"
-          USERS_WITH_PASSWORDS="("${{ steps.encrypt_passwords.outputs.encrypted_passwords }}")"
+          USERS_WITH_PASSWORDS=("${{ steps.encrypt_passwords.outputs.encrypted_passwords }}")
 
           if [[ "$ENVIRONMENT" == "Integration" ]]; then
             SPECIFIC_FOLDER="./config/Integration"
