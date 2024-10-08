@@ -74,6 +74,7 @@ jobs:
           find $SPECIFIC_FOLDER -name "*.xml" -exec chmod u+w {} \;
           ls -l $SPECIFIC_FOLDER/*.xml
           for USER_PASSWORD in "${USERS_WITH_PASSWORDS[@]}"; do
+            echo "$USER_PASSWORD"
             USER=$(echo "$USER_PASSWORD" | cut -d':' -f1)
             ENCRYPTED_PASSWORD=$(echo "$USER_PASSWORD" | cut -d':' -f2)
             for xml_file in "$SPECIFIC_FOLDER"/*.xml; do
