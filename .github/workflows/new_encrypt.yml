@@ -49,14 +49,13 @@ jobs:
             echo "Generated encrypted password for user $USER: $ENCRYPTED_PASSWORD"
             ENCRYPTED_PASSWORDS+=("$USER:$ENCRYPTED_PASSWORD")
           done
-
-          # Store encrypted passwords as output
-          echo "::set-output name=encrypted_passwords::${ENCRYPTED_PASSWORDS[@]}"
+          echo -e "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORDS"
 
       - name: Debug Encrypted Passwords
         run: |
           echo "Encrypted passwords for users:"
-          for PASSWORD in ${{ steps.encrypt_passwords.outputs.encrypted_passwords }}; do
+          # Split the output by newlines and loop over each user-password pair
+          echo "${{ steps.encrypt_passwords.outputs.encrypted_passwords }}" | while IFS= read -r PASSWORD; do
             echo "$PASSWORD"
           done
 
