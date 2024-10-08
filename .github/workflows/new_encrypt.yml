@@ -36,8 +36,7 @@ jobs:
       - name: Generate Encrypted Passwords for Users
         id: encrypt_passwords
         run: |
-          ENCRYPTED_PASSWORDS=()
-
+          ENCRYPTED_PASSWORDS=""
           for USER in ${{ steps.define_users.outputs.users }}; do
             if [[ "${{ inputs.encryptionMethod }}" == "AES" ]]; then
               ENCRYPTED_PASSWORD=$(openssl rand -base64 12 | openssl enc -aes-256-cbc -a -salt -pass pass:somepassword)
@@ -47,15 +46,16 @@ jobs:
               ENCRYPTED_PASSWORD=$(openssl rand -base64 12 | openssl rsautl -encrypt -pubin -inkey public.pem | base64)
             fi
             echo "Generated encrypted password for user $USER: $ENCRYPTED_PASSWORD"
-            ENCRYPTED_PASSWORDS+=("$USER:$ENCRYPTED_PASSWORD")
+            # Append user:encrypted_password pair to ENCRYPTED_PASSWORDS with a space delimiter
+            ENCRYPTED_PASSWORDS+="$USER:$ENCRYPTED_PASSWORD "
           done
-          echo -e "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORDS"
+          echo "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORDS"
 
       - name: Debug Encrypted Passwords
         run: |
           echo "Encrypted passwords for users:"
-          # Split the output by newlines and loop over each user-password pair
-          echo "${{ steps.encrypt_passwords.outputs.encrypted_passwords }}" | while IFS= read -r PASSWORD; do
+          # Split the output by space and loop over each user-password pair
+          for PASSWORD in ${{ steps.encrypt_passwords.outputs.encrypted_passwords }}; do
             echo "$PASSWORD"
           done
 
@@ -70,15 +70,12 @@ jobs:
           elif [[ "$ENVIRONMENT" == "Production" ]]; then
             SPECIFIC_FOLDER="./config/Production"
           fi
-
           echo "Processing XML files in $SPECIFIC_FOLDER"
           find $SPECIFIC_FOLDER -name "*.xml" -exec chmod u+w {} \;
           ls -l $SPECIFIC_FOLDER/*.xml
-
           for USER_PASSWORD in "${USERS_WITH_PASSWORDS[@]}"; do
             USER=$(echo "$USER_PASSWORD" | cut -d':' -f1)
             ENCRYPTED_PASSWORD=$(echo "$USER_PASSWORD" | cut -d':' -f2)
-
             for xml_file in "$SPECIFIC_FOLDER"/*.xml; do
               if [[ -f "$xml_file" ]]; then
                 if grep -q "<alias name=\"aliasPw${USER}\"" "$xml_file"; then
