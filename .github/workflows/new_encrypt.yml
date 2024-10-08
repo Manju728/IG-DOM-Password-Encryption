@@ -91,5 +91,14 @@ jobs:
               fi
             done
           done
-
           echo "Updated the XML file(s) with encrypted passwords for users in $ENVIRONMENT environment."
+          
+      - name: Commit and Push Changes
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Updated password for ${{ inputs.user }} using ${{ inputs.encryptionMethod }} encryption"
+          git push
