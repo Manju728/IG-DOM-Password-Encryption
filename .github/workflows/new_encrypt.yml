@@ -63,7 +63,7 @@ jobs:
         run: |
           ENVIRONMENT="${{ inputs.Environment }}"
           ENCRYPTION_METHOD="${{ inputs.encryptionMethod }}"
-          USERS_WITH_PASSWORDS=("${{ steps.encrypt_passwords.outputs.encrypted_passwords }}")
+          USERS_WITH_PASSWORDS="("${{ steps.encrypt_passwords.outputs.encrypted_passwords }}")"
 
           if [[ "$ENVIRONMENT" == "Integration" ]]; then
             SPECIFIC_FOLDER="./config/Integration"
@@ -76,7 +76,7 @@ jobs:
           for USER_PASSWORD in "${USERS_WITH_PASSWORDS[@]}"; do
             echo "$USER_PASSWORD"
             USER=$(echo "$USER_PASSWORD" | cut -d':' -f1)
-            ENCRYPTED_PASSWORD=$(echo "$USER_PASSWORD" | cut -d':' -f2)
+            ENCRYPTED_PASSWORD=$(echo "$USER_PASSWORD" | awk -F':' '{print $2}')
             for xml_file in "$SPECIFIC_FOLDER"/*.xml; do
               if [[ -f "$xml_file" ]]; then
                 if grep -q "<alias name=\"aliasPw${USER}\"" "$xml_file"; then
