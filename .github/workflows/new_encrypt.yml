@@ -58,7 +58,7 @@ jobs:
           ENCRYPTION_METHOD="${{ inputs.encryptionMethod }}"
           USER="${{ steps.define_users.outputs.users }}"
           USERS_WITH_PASSWORDS="${{ steps.encrypt_passwords.outputs.encrypted_passwords }}" 
-          echo "USERS_WITH_PASSWORDS"
+          echo "$USERS_WITH_PASSWORDS"
           if [[ "$ENVIRONMENT" == "Integration" ]]; then
             SPECIFIC_FOLDER="./config/Integration"
           elif [[ "$ENVIRONMENT" == "Production" ]]; then
