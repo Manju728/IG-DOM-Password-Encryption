@@ -57,7 +57,6 @@ jobs:
         run: |
           ENVIRONMENT="${{ inputs.Environment }}"
           ENCRYPTION_METHOD="${{ inputs.encryptionMethod }}"
-          USER="${{ steps.define_users.outputs.users }}"
           USERS_WITH_PASSWORDS=$(cat encrypted_passwords.txt)
           echo "$USERS_WITH_PASSWORDS"
           if [[ "$ENVIRONMENT" == "Integration" ]]; then
@@ -71,6 +70,7 @@ jobs:
           for PASSWORD in "$(cat encrypted_passwords.txt)"; do
             echo "$PASSWORD"
             ENCRYPTED_PASSWORD=$(echo "$PASSWORD" | awk -F':' '{print $2}' | awk '{print $1}')
+            echo "ENCRYPTED_PASSWORD"
             for xml_file in "$SPECIFIC_FOLDER"/*.xml; do
               if [[ -f "$xml_file" ]]; then
                 if grep -q "<alias name=\"aliasPw${USER}\"" "$xml_file"; then
