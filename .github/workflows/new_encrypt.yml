@@ -81,7 +81,7 @@ jobs:
               if [[ -f "$xml_file" ]]; then
                 if grep -q "<alias name=\"aliasPw${USER}\"" "$xml_file"; then
                   echo "Updating password for $USER in $xml_file"
-                  sed -i "/<alias name=\"aliasPw${USER}\"/s|password=\"[^\} ]*\"|password=\"{${ENCRYPTION_METHOD}:${ENCRYPTED_PASSWORD}}\"|g" "$xml_file"
+                  sed -i "/<alias name=\"aliasPw${USER}\"/s|password=\"[^\"]*\"|password=\"{${ENCRYPTION_METHOD}:${ENCRYPTED_PASSWORD}}\"|g" "$xml_file"
                 else
                   echo "No matching alias found for $USER in $xml_file."
                 fi
