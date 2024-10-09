@@ -50,6 +50,7 @@ jobs:
             ENCRYPTED_PASSWORDS+=("$USER:$ENCRYPTED_PASSWORD")
           done
           #echo "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORDS"
+          echo $(printf "%s " "${ENCRYPTED_PASSWORDS[@]}")
           ENCRYPTED_PASSWORD_STRING=$(printf "%s " "${ENCRYPTED_PASSWORDS[@]}")
           echo "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORD_STRING"
 
