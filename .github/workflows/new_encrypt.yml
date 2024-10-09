@@ -76,7 +76,7 @@ jobs:
           for USER_PASSWORD in ${{ steps.encrypt_passwords.outputs.encrypted_passwords }}; do
             echo "$USER_PASSWORD"
             USER=$(echo "$USER_PASSWORD" | awk -F':' '{print $1}')
-            ENCRYPTED_PASSWORD=$(echo "$USER_PASSWORD" | awk -F':' '{print $2}' | awk '{print $1}')
+            ENCRYPTED_PASSWORD=$(echo "$USER_PASSWORD" | awk -F':' '{print $2}')
             for xml_file in "$SPECIFIC_FOLDER"/*.xml; do
               if [[ -f "$xml_file" ]]; then
                 if grep -q "<alias name=\"aliasPw${USER}\"" "$xml_file"; then
