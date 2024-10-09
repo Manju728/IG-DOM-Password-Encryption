@@ -36,7 +36,7 @@ jobs:
       - name: Generate Encrypted Passwords for Users
         id: encrypt_passwords
         run: |
-          ENCRYPTED_PASSWORDS=""
+          ENCRYPTED_PASSWORDS=()
           for USER in ${{ steps.define_users.outputs.users }}; do
             if [[ "${{ inputs.encryptionMethod }}" == "AES" ]]; then
               ENCRYPTED_PASSWORD=$(openssl rand -base64 12 | openssl enc -aes-256-cbc -a -salt -pass pass:somepassword)
@@ -47,9 +47,11 @@ jobs:
             fi
             echo "Generated encrypted password for user $USER: $ENCRYPTED_PASSWORD"
             # Append user:encrypted_password pair to ENCRYPTED_PASSWORDS with a space delimiter
-            ENCRYPTED_PASSWORDS+="$USER:$ENCRYPTED_PASSWORD "
+            ENCRYPTED_PASSWORDS+=("$USER:$ENCRYPTED_PASSWORD")
           done
-          echo "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORDS"
+          #echo "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORDS"
+          ENCRYPTED_PASSWORD_STRING=$(printf "%s " "${ENCRYPTED_PASSWORDS[@]}")
+          echo "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORD_STRING"
 
       - name: Debug Encrypted Passwords
         run: |
