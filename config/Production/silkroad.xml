@@ -1,4 +1,4 @@
 <aliases>    
-  <alias name="aliasPwshashi" password="{RSA:Q3BsO0Z6Rr6GmNicHZ561l8zgWZU/ZVUTIeQ5q1h2lmLyZIrJ3u5Dy0s+l2JcrFKJo15z5WKhJf+}"/>    
-  <alias name="aliasPwanvesh" password="{AES:U2FsdGVkX19byV/wf4+QUSg43MXhjdURAamHX09Lu10=}"/>
+  <alias name="aliasPwshashi" password="{AES:U2FsdGVkX1/6Udkvzv13vJAvyBH4uYtzv4AoLvfd10K769ebvAP1dQK244TA7IZ8}"/>    
+  <alias name="aliasPwanvesh" password="{AES:U2FsdGVkX19EMH+57vCEc1CAwAxT42b2e/gxj6WJu1qV9cBhXA6xaXN+KVL7SRQF}"/>
 </aliases>
