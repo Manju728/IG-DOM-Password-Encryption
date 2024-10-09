@@ -49,13 +49,8 @@ jobs:
             # Append user:encrypted_password pair to ENCRYPTED_PASSWORDS with a space delimiter
             ENCRYPTED_PASSWORDS+="$USER:$ENCRYPTED_PASSWORD "
           done
-          ENCRYPTED_PASSWORDS=$(echo "$ENCRYPTED_PASSWORDS" | sed 's/ *$//')
-
-          # Base64 encode the encrypted passwords to safely pass them to GitHub Actions
-          ENCRYPTED_PASSWORDS_BASE64=$(echo "$ENCRYPTED_PASSWORDS" | base64)
-
-          # Write the base64 encoded output to the GitHub output file
-          echo "encrypted_passwords=$ENCRYPTED_PASSWORDS_BASE64" >> $GITHUB_OUTPUT
+          echo "$ENCRYPTED_PASSWORDS"
+          echo "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORDS"
 
       - name: Update Passwords in XML Files
         run: |
