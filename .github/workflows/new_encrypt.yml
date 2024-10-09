@@ -50,10 +50,12 @@ jobs:
             ENCRYPTED_PASSWORDS+="$USER:$ENCRYPTED_PASSWORD "
           done
           ENCRYPTED_PASSWORDS=$(echo "$ENCRYPTED_PASSWORDS" | sed 's/ *$//')
-          echo "$ENCRYPTED_PASSWORDS"
 
-          # Write the output to the GitHub output file (modern method)
-          echo "encrypted_passwords=$ENCRYPTED_PASSWORDS" >> $GITHUB_OUTPUT
+          # Base64 encode the encrypted passwords to safely pass them to GitHub Actions
+          ENCRYPTED_PASSWORDS_BASE64=$(echo "$ENCRYPTED_PASSWORDS" | base64)
+
+          # Write the base64 encoded output to the GitHub output file
+          echo "encrypted_passwords=$ENCRYPTED_PASSWORDS_BASE64" >> $GITHUB_OUTPUT
 
       - name: Update Passwords in XML Files
         run: |
