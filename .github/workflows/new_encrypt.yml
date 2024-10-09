@@ -57,7 +57,8 @@ jobs:
           ENVIRONMENT="${{ inputs.Environment }}"
           ENCRYPTION_METHOD="${{ inputs.encryptionMethod }}"
           USER="${{ steps.define_users.outputs.users }}"
-          USERS_WITH_PASSWORDS="${{ steps.encrypt_passwords.outputs.encrypted_passwords }}"  
+          USERS_WITH_PASSWORDS="${{ steps.encrypt_passwords.outputs.encrypted_passwords }}" 
+          echo "USERS_WITH_PASSWORDS"
           if [[ "$ENVIRONMENT" == "Integration" ]]; then
             SPECIFIC_FOLDER="./config/Integration"
           elif [[ "$ENVIRONMENT" == "Production" ]]; then
@@ -67,7 +68,6 @@ jobs:
           find $SPECIFIC_FOLDER -name "*.xml" -exec chmod u+w {} \;
           ls -l $SPECIFIC_FOLDER/*.xml
           for USER_PASSWORD in "${USERS_WITH_PASSWORDS[@]}"; do
-          #for USER_PASSWORD in ${{ steps.encrypt_passwords.outputs.encrypted_passwords }}; do
             echo "$USER_PASSWORD"
             USER=$(echo "$USER_PASSWORD" | awk -F':' '{print $1}')
             ENCRYPTED_PASSWORD=$(echo "$USER_PASSWORD" | awk -F':' '{print $2}')
