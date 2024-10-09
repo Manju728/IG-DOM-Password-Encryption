@@ -54,19 +54,11 @@ jobs:
           ENCRYPTED_PASSWORD_STRING=$(printf "%s " "${ENCRYPTED_PASSWORDS[@]}")
           echo "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORD_STRING"
 
-      - name: Debug Encrypted Passwords
-        run: |
-          echo "Encrypted passwords for users:"
-          # Split the output by space and loop over each user-password pair
-          for PASSWORD in ${{ steps.encrypt_passwords.outputs.encrypted_passwords }}; do
-            echo "$PASSWORD"
-          done
-
       - name: Update Passwords in XML Files
         run: |
           ENVIRONMENT="${{ inputs.Environment }}"
           ENCRYPTION_METHOD="${{ inputs.encryptionMethod }}"
-
+          USERS_WITH_PASSWORDS="${{ steps.encrypt_passwords.outputs.encrypted_passwords }}"  
           if [[ "$ENVIRONMENT" == "Integration" ]]; then
             SPECIFIC_FOLDER="./config/Integration"
           elif [[ "$ENVIRONMENT" == "Production" ]]; then
@@ -75,8 +67,8 @@ jobs:
           echo "Processing XML files in $SPECIFIC_FOLDER"
           find $SPECIFIC_FOLDER -name "*.xml" -exec chmod u+w {} \;
           ls -l $SPECIFIC_FOLDER/*.xml
-          #for USER_PASSWORD in "${USERS_WITH_PASSWORDS[@]}"; do
-          for USER_PASSWORD in ${{ steps.encrypt_passwords.outputs.encrypted_passwords }}; do
+          for USER_PASSWORD in "${USERS_WITH_PASSWORDS[@]}"; do
+          #for USER_PASSWORD in ${{ steps.encrypt_passwords.outputs.encrypted_passwords }}; do
             echo "$USER_PASSWORD"
             USER=$(echo "$USER_PASSWORD" | awk -F':' '{print $1}')
             ENCRYPTED_PASSWORD=$(echo "$USER_PASSWORD" | awk -F':' '{print $2}')
