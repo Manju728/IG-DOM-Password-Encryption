@@ -47,11 +47,10 @@ jobs:
             fi
             echo "Generated encrypted password for user $USER: $ENCRYPTED_PASSWORD"
             # Append user:encrypted_password pair to ENCRYPTED_PASSWORDS with a space delimiter
-            ENCRYPTED_PASSWORDS+="$USER:$ENCRYPTED_PASSWORD "
+            ENCRYPTED_PASSWORDS+={"$USER:$ENCRYPTED_PASSWORD "}
           done
-          #echo "$ENCRYPTED_PASSWORDS"
-          #echo "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORDS"
-          echo "encrypted_passwords=$ENCRYPTED_PASSWORDS" >> $GITHUB_OUTPUT
+          echo "$ENCRYPTED_PASSWORDS"
+          echo "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORDS"
 
       - name: Update Passwords in XML Files
         run: |
