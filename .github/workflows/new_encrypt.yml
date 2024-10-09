@@ -70,16 +70,18 @@ jobs:
           for PASSWORD in "$(cat encrypted_passwords.txt)"; do
             echo "$PASSWORD"
             ENCRYPTED_PASSWORD=$(echo "$PASSWORD" | awk -F':' '{print $2}' | awk '{print $1}')
-            echo "ENCRYPTED_PASSWORD"
-            for xml_file in "$SPECIFIC_FOLDER"/*.xml; do
-              if [[ -f "$xml_file" ]]; then
-                if grep -q "<alias name=\"aliasPw${USER}\"" "$xml_file"; then
-                  echo "Updating password for $USER in $xml_file"
-                  sed -i "/<alias name=\"aliasPw${USER}\"/s|password=\"[^\"]*\"|password=\"{${ENCRYPTION_METHOD}:${ENCRYPTED_PASSWORD}}\"|g" "$xml_file"
-                else
-                  echo "No matching alias found for $USER in $xml_file."
+            echo "$ENCRYPTED_PASSWORD"
+            for USER in ${{ steps.define_users.outputs.users }}; do
+              for xml_file in "$SPECIFIC_FOLDER"/*.xml; do
+                if [[ -f "$xml_file" ]]; then
+                  if grep -q "<alias name=\"aliasPw${USER}\"" "$xml_file"; then
+                    echo "Updating password for $USER in $xml_file"
+                    sed -i "/<alias name=\"aliasPw${USER}\"/s|password=\"[^\"]*\"|password=\"{${ENCRYPTION_METHOD}:${ENCRYPTED_PASSWORD}}\"|g" "$xml_file"
+                  else
+                    echo "No matching alias found for $USER in $xml_file."
+                  fi
                 fi
-              fi
+              done
             done
           done
           echo "Updated the XML file(s) with encrypted passwords for users in $ENVIRONMENT environment."
