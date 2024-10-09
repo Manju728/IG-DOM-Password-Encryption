@@ -51,8 +51,8 @@ jobs:
           done
           #echo "$ENCRYPTED_PASSWORDS"
           #echo "::set-output name=encrypted_passwords::$ENCRYPTED_PASSWORDS"
-          - name: Set output
-            run: echo "{$encrypted_passwords}={$ENCRYPTED_PASSWORDS}" >> $GITHUB_OUTPUT
+      - name: Set output
+        run: echo "{$encrypted_passwords}={$ENCRYPTED_PASSWORDS}" >> $GITHUB_OUTPUT
 
       - name: Update Passwords in XML Files
         run: |
